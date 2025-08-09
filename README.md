@@ -8,7 +8,7 @@ Links to official lists:
 [Windows Virtual-Key Codes](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)  
 [XInput Gamepad Button Flags](https://learn.microsoft.com/en-us/windows/win32/api/xinput/ns-xinput-xinput_gamepad)
 
-## REDscript Class
+## [REDscript Class](EasyTrainerKey/RedScript/EasyTrainerInputHandler.reds)
 ```reds
 public native class EasyTrainerInputHandler extends IScriptable {  
     public native func IsKeyPressed(vkCode: Int32) -> Bool  
@@ -20,7 +20,7 @@ public native class EasyTrainerInputHandler extends IScriptable {
 }
 ```
 
-## Example of how to use it in Lua within CET
+## [Example of how to use it in Lua within CET](https://github.com/AviWind02/EasyTrainers/blob/main/UI/Gamepad/InputHandler.lua)
 ```lua 
 -- Initialize handler
 local ETInput = nil

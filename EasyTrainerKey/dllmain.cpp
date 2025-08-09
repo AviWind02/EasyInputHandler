@@ -1,3 +1,8 @@
+// Avi
+// Created for EasyTrainer because native input handling in my mod wasn't great.
+// CET input worked okay but lacked controller support, so this file bridges both
+// keyboard and gamepad input checks via RED4ext.
+
 #include "pch.h"
 #include <RED4ext/RED4ext.hpp>
 #include <RED4ext/CNamePool.hpp>
@@ -21,12 +26,14 @@ RED4ext::CClass* EasyTrainerInputHandler::GetNativeType()
     return &etNativeClass;
 }
 
-inline bool IsKeyDown(int vKey)
+// Checks if a given virtual key is currently down
+bool IsKeyDown(int vKey)
 {
     return (GetAsyncKeyState(vKey) & 0x8000) != 0;
 }
 
-inline bool IsPadButtonDown(WORD button)
+// Checks if a given gamepad button is currently down
+bool IsPadButtonDown(WORD button)
 {
     XINPUT_STATE state{};
     if (XInputGetState(0, &state) == ERROR_SUCCESS)
@@ -34,7 +41,7 @@ inline bool IsPadButtonDown(WORD button)
     return false;
 }
 
-
+// Returns true if the specified keyboard key is pressed
 void IsKeyPressed(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool* aOut, int64_t)
 {
     int32_t keyCode;
@@ -44,6 +51,7 @@ void IsKeyPressed(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool* aOu
     if (aOut) *aOut = IsKeyDown(keyCode);
 }
 
+// Returns true if the specified gamepad button is pressed
 void IsGamepadButtonPressed(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool* aOut, int64_t)
 {
     int32_t buttonCode;
@@ -53,6 +61,7 @@ void IsGamepadButtonPressed(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame,
     if (aOut) *aOut = IsPadButtonDown(static_cast<WORD>(buttonCode));
 }
 
+// Returns true if any keyboard key is currently pressed
 void IsKeyboardActive(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool* aOut, int64_t)
 {
     aFrame->code++;
@@ -70,6 +79,7 @@ void IsKeyboardActive(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool*
     }
 }
 
+// Returns true if any gamepad button is currently pressed
 void IsGamepadActive(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool* aOut, int64_t)
 {
     aFrame->code++;
@@ -85,6 +95,7 @@ void IsGamepadActive(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, bool* 
     }
 }
 
+// Returns the virtual key code of the first pressed keyboard key (0 if none)
 void GetPressedKey(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, int32_t* aOut, int64_t)
 {
     aFrame->code++;
@@ -102,6 +113,7 @@ void GetPressedKey(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, int32_t*
     }
 }
 
+// Returns the gamepad button for currently pressed buttons (0 if none)
 void GetPressedGamepadButton(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame, int32_t* aOut, int64_t)
 {
     aFrame->code++;
@@ -118,7 +130,6 @@ void GetPressedGamepadButton(RED4ext::IScriptable*, RED4ext::CStackFrame* aFrame
     }
 }
 
-
 RED4EXT_C_EXPORT void RED4EXT_CALL RegisterTypes()
 {
     etNativeClass.flags.isNative = true;
@@ -128,11 +139,19 @@ RED4EXT_C_EXPORT void RED4EXT_CALL RegisterTypes()
 RED4EXT_C_EXPORT void RED4EXT_CALL PostRegisterTypes()
 {
     auto regFunc = [&](const char* name, auto fn)
-        {
-            auto f = RED4ext::CClassFunction::Create(&etNativeClass, name, name, fn, { .isNative = true });
-            f->SetReturnType("Bool");
-            etNativeClass.RegisterFunction(f);
-        };
+    {
+        auto f = RED4ext::CClassFunction::Create(&etNativeClass, name, name, fn, { .isNative = true });
+        f->SetReturnType("Bool");
+        etNativeClass.RegisterFunction(f);
+    };
+
+    auto regFuncInt = [&](const char* name, auto fn)
+    {
+        auto f = RED4ext::CClassFunction::Create(&etNativeClass, name, name, fn, { .isNative = true });
+        f->SetReturnType("Int32");
+        etNativeClass.RegisterFunction(f);
+    };
+
 
     auto rtti = RED4ext::CRTTISystem::Get();
     etNativeClass.parent = rtti->GetClass("IScriptable");
@@ -142,17 +161,8 @@ RED4EXT_C_EXPORT void RED4EXT_CALL PostRegisterTypes()
     regFunc("IsKeyboardActive", &IsKeyboardActive);
     regFunc("IsGamepadActive", &IsGamepadActive);
 
-    auto regFuncInt = [&](const char* name, auto fn)
-    {
-        auto f = RED4ext::CClassFunction::Create(&etNativeClass, name, name, fn, { .isNative = true });
-        f->SetReturnType("Int32");
-        etNativeClass.RegisterFunction(f);
-    };
-
     regFuncInt("GetPressedKey", &GetPressedKey);
     regFuncInt("GetPressedGamepadButton", &GetPressedGamepadButton);
-
-
 }
 
 RED4EXT_C_EXPORT bool RED4EXT_CALL Main(RED4ext::PluginHandle, RED4ext::EMainReason reason, const RED4ext::Sdk*)

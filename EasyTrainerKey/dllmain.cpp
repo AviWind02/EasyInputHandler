@@ -26,15 +26,34 @@ RED4ext::CClass* EasyTrainerInputHandler::GetNativeType()
     return &etNativeClass;
 }
 
+// Checks if the game window is currently focused
+bool IsGameWindowFocused()
+{
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd)
+        return false;
+
+    DWORD pid = 0;
+    GetWindowThreadProcessId(hwnd, &pid);
+
+    return pid == GetCurrentProcessId();
+}
+
 // Checks if a given virtual key is currently down
 bool IsKeyDown(int vKey)
 {
+    if (!IsGameWindowFocused())
+        return false;
+
     return (GetAsyncKeyState(vKey) & 0x8000) != 0;
 }
 
 // Checks if a given gamepad button is currently down
 bool IsPadButtonDown(WORD button)
 {
+    if (!IsGameWindowFocused())
+        return false;
+
     XINPUT_STATE state{};
     if (XInputGetState(0, &state) == ERROR_SUCCESS)
         return (state.Gamepad.wButtons & button) != 0;

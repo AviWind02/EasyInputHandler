@@ -59,5 +59,5 @@ namespace EasyTrainer::Input {
             }
         }
 
-    } // namespace Keyboard
-} // namespace Input
+    }
+}

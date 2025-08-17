@@ -3,7 +3,7 @@
 namespace EasyTrainer::Input {
     namespace Keyboard {
 
-		// checking if window is foreground - if not, ignore key presses(to be used in lua)
+		// checking if window is foreground - if not, ignore key presses
         static bool IsGameWindowFocused()
         {
             HWND hwnd = GetForegroundWindow();
